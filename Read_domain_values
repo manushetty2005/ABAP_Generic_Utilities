@@ -1,0 +1,37 @@
+   
+    DATA:lt_dd07v_tab_a  TYPE STANDARD TABLE OF dd07v,
+         lt_dd07v_tab_b  TYPE STANDARD TABLE OF dd07v.
+         
+   "Reading domain value
+    CALL FUNCTION 'DD_DOMA_GET'
+      EXPORTING
+        domain_name = 'Domain_Name'
+*       GET_STATE   = 'M  '
+        langu       = sy-langu
+*       PRID        = 0
+        withtext    = 'X'
+*     IMPORTING
+*       DD01V_WA_A  =
+*       DD01V_WA_N  =
+*       GOT_STATE   =
+      TABLES
+        dd07v_tab_a = lt_dd07v_tab_a
+        dd07v_tab_n = lt_dd07v_tab_b
+*     EXCEPTIONS
+*       ILLEGAL_VALUE       = 1
+*       OP_FAILURE  = 2
+*       OTHERS      = 3
+      .
+    IF sy-subrc <> 0.
+      ex_error_msg = 'No Data found' ##NO_TEXT .
+
+    ELSE.
+
+        READ TABLE lt_dd07v_tab_a INTO DATA(ls_dd07v_tab_a) WITH KEY domvalue_l = ls_code-code BINARY SEARCH.
+        IF sy-subrc EQ 0.
+          ls_request_type-code = ls_dd07v_tab_a-domvalue_l.
+          ls_request_type-description = ls_dd07v_tab_a-ddtext.
+          APPEND ls_request_type TO ex_request_type.
+          CLEAR: ls_request_type,ls_dd07v_tab_a.
+        ENDIF.
+    ENDIF.
