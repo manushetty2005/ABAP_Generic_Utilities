@@ -1,4 +1,4 @@
-* Create a dynamic Table of type whose name is stored in a variable
+* Create a dynamic Table of type whose name is stored in a variable.
   FIELD-SYMBOLS : <lt_table>     TYPE  any.
   DATA : lv_type TYPE string.
 * This name can be anything, below is the structure name that i wanted to pass to a variable.
