@@ -1,0 +1,10 @@
+* Create a dynamic Table of type whose name is stored in a variable
+  FIELD-SYMBOLS : <lt_table>     TYPE  any.
+  DATA : lv_type TYPE string.
+* This name can be anything, below is the structure name that i wanted to pass to a variable.
+  CONCATENATE '/BI0/M' i_iobjnm+1(29) INTO lv_type.
+
+  DATA: dref TYPE REF TO data.
+  CREATE DATA dref TYPE STANDARD TABLE OF (lv_type). "lv_type contains the name of the * ABAP type*
+  ASSIGN dref->* TO <lt_table>. "<lt_table> will be a table of type value contained within lv_type = /BI0/M0COSTCENTER ETC..
+  CLEAR dref.
