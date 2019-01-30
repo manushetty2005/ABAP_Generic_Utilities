@@ -1,0 +1,69 @@
+FUNCTION ztest_get_masterdata.
+*"----------------------------------------------------------------------
+*"*"Local Interface:
+*"  IMPORTING
+*"     REFERENCE(I_IOBJNM) TYPE  RSDIOBJ-IOBJNM DEFAULT '0COSTCENTER'
+*"  EXPORTING
+*"     REFERENCE(ET_MEMBERS) TYPE  ZCIS_F4_STRUCT_T
+*"  TABLES
+*"      ET_COSTCENTER TYPE  /BI0/WMCOSTCENTER
+*"----------------------------------------------------------------------
+
+  DATA : ls_dept TYPE rrsv_s_dep.
+  DATA : lt_dept TYPE rrsv_t_dep.
+  DATA : lt_sid TYPE rrsi_t_sid.
+
+  DATA : lt_chavt TYPE rsdm_t_chavt.
+  DATA : ls_final TYPE zcis_f4_struct.
+* New Code
+  CALL FUNCTION 'RSD_CHA_GET_VALUES_SIMPLE'
+    EXPORTING
+      i_chanm             = i_iobjnm
+      i_date              = sy-datum
+      i_langu             = sy-langu
+      i_f4mode            = 'M'
+    IMPORTING
+      e_t_chavt           = lt_chavt
+    EXCEPTIONS
+      illegal_infocube    = 1
+      illegal_infoobject  = 2
+      x_message           = 3
+      no_values_available = 4
+      illegal_input       = 5
+      OTHERS              = 6.
+  IF sy-subrc <> 0.
+* Implement suitable error handling here
+  ENDIF.
+
+  LOOP AT lt_chavt INTO DATA(ls_chavt).
+    ls_dept-chanm = i_iobjnm.
+    ls_dept-chavl_int = ls_chavt-chavl_int_nc.
+    ls_dept-chavl_ext = ls_chavt-chavl_ext.
+
+    APPEND ls_dept TO lt_dept.
+    CLEAR ls_dept.
+    CALL FUNCTION 'RSDM_SIDS_FROM_DEP_GET'
+      EXPORTING
+        i_iobjnm           = i_iobjnm
+        i_t_dep            = lt_dept
+      IMPORTING
+        e_t_sid            = lt_sid
+      EXCEPTIONS
+        illegal_infoobject = 1
+        x_message          = 2
+        OTHERS             = 3.
+    IF sy-subrc <> 0.
+* Implement suitable error handling here
+    ENDIF.
+
+    ls_final-member_id = ls_chavt-chavl_ext_nc.
+    ls_final-member_text = ls_chavt-chatext-txtmd.
+    READ TABLE lt_sid INTO DATA(ls_sid) INDEX 1.
+    ls_final-sid = ls_sid.
+    REFRESH : lt_sid,lt_dept.
+    APPEND ls_final TO et_members.
+
+  ENDLOOP.
+
+
+ENDFUNCTION.
